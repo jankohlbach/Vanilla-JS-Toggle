@@ -17,14 +17,15 @@
       window.addEventListener('resize', this.getHeight);
     }
 
-    // clones the toggle-body to measure the height and then removes it again
+    // measures the height and paddings of the element
     getHeight() {
-      const clone = this.element.cloneNode(true);
-      clone.setAttribute('style', 'visibility: hidden; display: block; margin: -999px 0');
-      this.height = this.element.parentNode.appendChild(clone).clientHeight;
-      this.paddingTop = parseInt(getComputedStyle(clone).paddingTop, 10);
-      this.paddingBottom = parseInt(getComputedStyle(clone).paddingBottom, 10);
-      this.element.parentNode.removeChild(clone);
+      this.element.setAttribute('style', 'display: block;');
+      this.height = parseInt(this.element.clientHeight, 10);
+      this.paddingTop = parseInt(getComputedStyle(this.element).paddingTop, 10);
+      this.paddingBottom = parseInt(getComputedStyle(this.element).paddingBottom, 10);
+      if (!this.element.parentNode.classList.contains(activeClass)) {
+        this.element.setAttribute('style', 'display: none;');
+      }
       return this.height;
     }
 
