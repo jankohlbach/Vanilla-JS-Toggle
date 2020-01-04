@@ -1,44 +1,44 @@
 (() => {
-  // all toggles
-  const toggles = document.querySelectorAll('.toggle');
-  // all toggle-header, trigger toggle-effect
-  const toggleHeader = document.querySelectorAll('.toggle-head', toggles);
-  // all toggle-bodies, contain the content to show/hide
-  const toggleBodies = document.querySelectorAll('.toggle-body', toggles);
-  // all toggle-footer, trigger toggle-effect
-  const toggleFooter = document.querySelectorAll('.toggle-foot', toggles);
-  const activeClass = 'open';
-
-  const Toggler = class Toggle {
+  class Toggle {
     constructor(element) {
-      this.element = element;
+      this.toggleElement = element;
+      this.toggleBody = element.querySelector('.toggle-body');
       this.getHeight = this.getHeight.bind(this);
       this.toggle = this.toggle.bind(this);
-      window.addEventListener('resize', this.getHeight);
+
+      this.initEventListeners();
+    }
+
+    initEventListeners() {
+      const toggleHead = this.toggleElement.querySelector('.toggle-head');
+      const toggleFoot = this.toggleBody.querySelector('.toggle-foot');
+      toggleHead.addEventListener('click', this.toggle);
+      toggleFoot.addEventListener('click', this.toggle);
     }
 
     // measures the height and paddings of the element
     getHeight() {
-      this.element.setAttribute('style', 'display: block;');
-      this.height = parseInt(this.element.clientHeight, 10);
-      this.paddingTop = parseInt(getComputedStyle(this.element).paddingTop, 10);
-      this.paddingBottom = parseInt(getComputedStyle(this.element).paddingBottom, 10);
-      if (!this.element.parentNode.classList.contains(activeClass)) {
-        this.element.setAttribute('style', 'display: none;');
+      if (!this.toggleElement.classList.contains(Toggle.ACTIVE_CLASS)) {
+        this.toggleBody.setAttribute('style', 'display: block;');
       }
-      return this.height;
+      this.height = parseInt(getComputedStyle(this.toggleBody).height, 10);
+      this.paddingTop = parseInt(getComputedStyle(this.toggleBody).paddingTop, 10);
+      this.paddingBottom = parseInt(getComputedStyle(this.toggleBody).paddingBottom, 10);
+      if (!this.toggleElement.classList.contains(Toggle.ACTIVE_CLASS)) {
+        this.toggleBody.setAttribute('style', 'display: none;');
+      }
     }
 
     // handles the toggle-effect
     toggle() {
       this.getHeight();
-      const currentHeight = this.element.clientHeight;
+      const currentHeight = this.toggleBody.clientHeight;
       const time = this.height / 3 + 150;
       const [start, end] = currentHeight > this.height / 2 ? [this.height, 0] : [0, this.height];
       const difference = end - start;
 
-      this.element.parentNode.classList[end === 0 ? 'remove' : 'add'](activeClass);
-      this.element.setAttribute('style', 'overflow: hidden; display: block; padding-top: 0; padding-bottom: 0;');
+      this.toggleElement.classList[end === 0 ? 'remove' : 'add'](Toggle.ACTIVE_CLASS);
+      this.toggleBody.setAttribute('style', 'overflow: hidden; display: block; padding-top: 0; padding-bottom: 0;');
 
       // calculating and applying the steps in px
       const initTime = new Date().getTime();
@@ -53,9 +53,9 @@
           : (this.paddingBottom + (-this.paddingBottom * newTime / time));
 
         if (newTime <= time) {
-          this.element.setAttribute('style', `overflow: hidden; display: block; padding-top: ${stepPaddingT}px; padding-bottom: ${stepPaddingB}px; height: ${step}px`);
+          this.toggleBody.setAttribute('style', `overflow: hidden; display: block; padding-top: ${stepPaddingT}px; padding-bottom: ${stepPaddingB}px; height: ${step}px`);
         } else {
-          this.element.setAttribute('style', `display: ${end === 0 ? 'none' : 'block'}`);
+          this.toggleBody.setAttribute('style', `display: ${end === 0 ? 'none' : 'block'}`);
         }
         const repeatLoop = requestAnimationFrame(repeat);
 
@@ -67,25 +67,15 @@
 
       repeat();
     }
-  };
+  }
 
-  // initialize all toggle-bodies
-  toggleBodies.forEach((toggleBody) => {
-    const element = toggleBody;
-    element.isToggle = new Toggler(toggleBody);
-  });
+  Toggle.ACTIVE_CLASS = 'open';
 
-  // add eventListener to all toggle-header
-  toggleHeader.forEach((toggleHead) => {
-    toggleHead.addEventListener('click', () => {
-      toggleHead.parentNode.querySelector('.toggle-body').isToggle.toggle();
-    });
-  });
+  // all toggles
+  const toggles = document.querySelectorAll('.toggle');
 
-  // add eventListener to all toggle-footer
-  toggleFooter.forEach((toggleFoot) => {
-    toggleFoot.addEventListener('click', () => {
-      toggleFoot.parentNode.isToggle.toggle();
-    });
+  toggles.forEach((toggle) => {
+    // eslint-disable-next-line no-new
+    new Toggle(toggle);
   });
-}).call(this);
+})();
